@@ -1,17 +1,16 @@
-import pandas as pd
 from src.stochastic_compositions import make_composition
+import pickle
 
 
 def load_data(property_to_train):
-    df = pd.read_excel("C:/Users/mrodobbe/Documents/Research/GauL-mixture/libraries.xlsx",
-                       sheet_name="Labeled Library",
-                       index_col=0)
-    df_input = pd.read_excel("C:/Users/mrodobbe/Documents/Research/GauL-mixture/Data/naphtha_samples_ppp.xlsx",
-                             sheet_name="Input",
-                             index_col=0)
-    df_output = pd.read_excel("C:/Users/mrodobbe/Documents/Research/GauL-mixture/Data/naphtha_samples_ppp.xlsx",
-                              sheet_name="Output",
-                              index_col=0)
+    with open("Data/labeled_library.pickle", "rb") as lib_f:
+        df = pickle.load(lib_f)
+
+    with open("Data/pyl_input.pickle", "rb") as inp_f:
+        df_input = pickle.load(inp_f)
+
+    with open("Data/pyl_input.pickle", "rb") as oup_f:
+        df_output = pickle.load(oup_f)
 
     lumps = df_input.keys().tolist()
     all_lumps = list(df["Lump"].unique())
@@ -49,12 +48,11 @@ def load_data(property_to_train):
 
 
 def load_test_data():
-    df = pd.read_excel("C:/Users/mrodobbe/Documents/Research/GauL-mixture/libraries.xlsx",
-                       sheet_name="Labeled Library",
-                       index_col=0)
-    df_input = pd.read_excel("C:/Users/mrodobbe/Documents/Research/GauL-mixture_full/mei.xlsx",
-                             sheet_name="Input",
-                             index_col=0)
+    with open("Data/labeled_library.pickle", "rb") as lib_f:
+        df = pickle.load(lib_f)
+
+    with open("Data/pyl_input.pickle", "rb") as inp_f:
+        df_input = pickle.load(inp_f)
 
     lumps = df_input.keys().tolist()
 
@@ -63,33 +61,3 @@ def load_test_data():
     compositions = df_input.to_numpy()
 
     return compositions, smiles_dict, weight_dict, df, lumps
-
-
-def load_transfer_data():
-    df = pd.read_excel("C:/Users/mrodobbe/Documents/Research/GauL-mixture/libraries.xlsx",
-                       sheet_name="Labeled Library",
-                       index_col=0)
-    df_input = pd.read_excel("C:/Users/mrodobbe/Documents/Research/GauL-mixture_full/mei.xlsx",
-                             sheet_name="Input",
-                             index_col=0)
-    df_output = pd.read_excel("C:/Users/mrodobbe/Documents/Research/GauL-mixture_full/mei.xlsx",
-                              sheet_name="Output",
-                              index_col=0)
-
-    lumps = df_input.keys().tolist()
-    all_lumps = list(df["Lump"].unique())
-    selected_lumps = list(set(lumps) | set(all_lumps))
-
-    smiles_dict, weight_dict = make_composition(df, selected_lumps)  # TODO: Selected_lumps!
-
-    compositions = df_input.to_numpy()
-
-    header = df_output.columns
-    bp_columns = [i for i in header if "BP" in i]
-    sg_columns = [i for i in header if ("SG" in i or "density" in i)]
-    boiling_points = df_output[bp_columns].to_numpy()
-    output_sg = df_output[sg_columns].to_numpy().reshape(-1) * 1000
-
-    print("All data is loaded!")
-
-    return compositions, boiling_points, output_sg, smiles_dict, weight_dict, df, lumps
