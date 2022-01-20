@@ -90,4 +90,4 @@ When using GauL-HDAD for your own publication, please cite the original paper:
 
 *Learning Molecular Representations for Thermochemistry Prediction of Cyclic Hydrocarbons and Oxygenates <br>
 Dobbelaere, M.R.; Plehiers, P.P.; Van de Vijver, R.;  Stevens, C.V.; Van Geem, K.M. <br>
-Submitted to Journal of Physical Chemistry A, 2021*
+J. Phys. Chem. A 2021, 125, 23, 5166–5179*
