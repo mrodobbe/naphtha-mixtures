@@ -67,8 +67,8 @@ def molecular_feature_collection(dataframe, smiles_dictionary):
             sg_dict[smile] = dataframe["d20"][smile]
         else:
             sg_to_predict.append(smile)
-        if dataframe["mu code"][smile] == "1,2" or dataframe["mu code"][smile] == "2":
-            vap_dict[smile] = dataframe["viscosity"][smile]
+        if dataframe["vap code"][smile] == "1,2":
+            vap_dict[smile] = dataframe["pVap"][smile]
         else:
             vap_to_predict.append(smile)
 
