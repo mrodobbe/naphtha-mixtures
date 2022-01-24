@@ -23,17 +23,17 @@ def load_data(property_to_train):
     header = df_output.columns
     bp_columns = [i for i in header if "BP" in i]
 
-    if property_to_train.lower() is "sg":
+    if property_to_train.lower() == "sg":
         sg_columns = [i for i in header if ("sg" in i.lower() or "specific gravity" in i.lower())]
-    elif property_to_train.lower() is "mu" or property_to_train.lower() is "viscosity" \
-            or property_to_train.lower() is "dynamic viscosity":
+    elif property_to_train.lower() == "mu" or property_to_train.lower() == "viscosity" \
+            or property_to_train.lower() == "dynamic viscosity":
         sg_columns = [i for i in header if ("mu" in i.lower() or "dynamic viscosity" in
                                             i.lower() or "viscosity" in i.lower())]
-    elif property_to_train.lower() is "kinematic viscosity":
+    elif property_to_train.lower() == "kinematic viscosity":
         sg_columns = [i for i in header if "kinematic viscosity" in i.lower()]
-    elif property_to_train.lower() is "density" or property_to_train.lower() is "d20":
+    elif property_to_train.lower() == "density" or property_to_train.lower() == "d20":
         sg_columns = [i for i in header if ("d20" in i.lower() or "density" in i.lower())]
-    elif property_to_train.lower() is "surface tension" or property_to_train.lower() is "st":
+    elif property_to_train.lower() == "surface tension" or property_to_train.lower() == "st":
         sg_columns = [i for i in header if ("st" in i.lower() or "surface tension" in i.lower())]
     else:
         print("\n\nPrediction of mixture {} values is currently not yet supported. The property can be added in "
