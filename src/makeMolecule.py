@@ -305,10 +305,11 @@ def add_n(molecules, representations):
 def input_checker(args, filename):
     if len(args) < 2:
         print("Not enough input files.\nPlease use the following command structure:\n"
-              "python {}.py <save_folder>".format(filename))
+              "python {}.py <save_folder> <mixture property>".format(filename))
         raise IndexError
     else:
         if filename == "naphtha_mixtures":
+            license_disclaimer()
             folder = args[1]
             try:
                 os.mkdir(folder)
@@ -357,12 +358,15 @@ def input_checker(args, filename):
 
 def license_disclaimer():
     print("\n\n------------------------------------------------------------------------------------------------------\n"
-          "GauL  Copyright (C) 2021 Maarten R. Dobbelaere \n"
+          "Copyright (c) 2022 Maarten Dobbelaere \n"
           "This program comes with ABSOLUTELY NO WARRANTY; for details open the `LICENSE` file. \n"
           "This is free software, and you are welcome to redistribute it \n"
           "under certain conditions; for details open the `LICENSE` file.\n\n"
-          "When using GauL for your own publication, please refer to the original paper:\n"
+          "When using this program for your own publication, please refer to the original papers:\n"
           "Learning Molecular Representations for Thermochemistry Prediction of Cyclic Hydrocarbons and Oxygenates\n"
           "Dobbelaere, M.R.; Plehiers, P.P.; Van de Vijver, R.; Stevens, C.V.; Van Geem, K.M.\n"
           "Journal of Physical Chemistry A, 2021, 125, 23, pp. 5166-5179\n"
+          "Machine Learning for Physicochemical Property Prediction of Hydrocarbon Mixtures\n"
+          "Dobbelaere, M.R.; Ureel, Y.; Vermeire, F.H.; Stevens, C.V.; Van Geem, K.M.\n"
+          "Submitted to Industrial and Engineering Chemistry Research, 2022\n"
           "------------------------------------------------------------------------------------------------------\n\n")
