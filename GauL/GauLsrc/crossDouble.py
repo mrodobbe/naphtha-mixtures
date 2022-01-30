@@ -1,6 +1,9 @@
 import numpy as np
+import os
 from tensorflow.keras.callbacks import EarlyStopping, Callback
 from tensorflow.keras import Model
+from tensorflow.python.client import device_lib
+import tensorflow as tf
 import pickle
 from GauL.GauLsrc.makeModel import model_builder
 from GauL.GauLsrc.makeMolecule import heavy_atoms
@@ -261,19 +264,53 @@ def run_cv(all_molecules, all_heavy, x, y, loop, i, save_folder, target):
         return test_mean_absolute_error, test_root_mean_squared_error, ensemble_mae, ensemble_rmse, results_list
 
 
+def num_available_gpus():
+    local_device_protos = device_lib.list_local_devices()
+    return len([x.name for x in local_device_protos if x.device_type == 'GPU'])
+
+
 def training(molecules, representations, outputs, save_folder, target_property, n_folds):
     kf = KFold(n_folds, shuffle=True, random_state=12081997)
     heavy_atoms_vector = make_heavy_atoms(molecules)
     cpu = cpu_count()
+    gpu = num_available_gpus()
     # cpu = 4
-    if n_folds > cpu:
-        n_jobs = cpu
+    if gpu > 0:
+        if cpu > 10:
+            n_jobs = 10
+        else:
+            n_jobs = 1
     else:
-        n_jobs = n_folds
+        if n_folds > cpu:
+            if cpu < 3:
+                n_jobs = 1
+            else:
+                n_jobs = cpu - 2
+        else:
+            n_jobs = n_folds
 
-    cv_info = Parallel(n_jobs=n_jobs)(delayed(run_cv)(molecules, heavy_atoms_vector, representations, outputs,
-                                                      loop_kf, i, save_folder, target_property)
-                                      for loop_kf, i in zip(kf.split(representations), range(1, n_folds+1)))
+    print("Your system has {} GPUs, {} CPUs and {} fold(s) will be trained in parallel".format(gpu, cpu, n_jobs))
+    if n_jobs > 1:
+        if gpu > 0:
+            os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+            cv_info = Parallel(n_jobs=n_jobs)(delayed(run_cv)(molecules, heavy_atoms_vector, representations, outputs,
+                                                              loop_kf, i, save_folder, target_property)
+                                              for loop_kf, i in zip(kf.split(representations), range(1, n_folds+1)))
+        else:
+            cv_info = Parallel(n_jobs=n_jobs)(delayed(run_cv)(molecules, heavy_atoms_vector, representations, outputs,
+                                                              loop_kf, i, save_folder, target_property)
+                                              for loop_kf, i in zip(kf.split(representations), range(1, n_folds+1)))
+    else:
+        if gpu == 1:
+            gpus = tf.config.list_physical_devices('GPU')
+            tf.config.set_visible_devices(gpus[0], 'GPU')
+            cv_info = [run_cv(molecules, heavy_atoms_vector, representations, outputs,
+                                                              loop_kf, i, save_folder, target_property)
+                                              for loop_kf, i in zip(kf.split(representations), range(1, n_folds+1))]
+        else:
+            cv_info = [run_cv(molecules, heavy_atoms_vector, representations, outputs,
+                                                              loop_kf, i, save_folder, target_property)
+                                              for loop_kf, i in zip(kf.split(representations), range(1, n_folds+1))]
 
     return cv_info
 
