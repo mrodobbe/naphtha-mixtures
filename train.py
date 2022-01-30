@@ -1,10 +1,8 @@
 from src.makeMolecule import input_checker
 from src.featurization import representation_checker, make_mixture_features, get_gmm, clean_dicts
-from src.crossValidation import cv, cv_configurations, training
+from src.crossValidation import cv_configurations, training
 from src.property_prediction import predict_properties
 from src.postprocessing import process_results
-import numpy as np
-from joblib import Parallel, delayed
 import sys
 from input import load_data
 
