@@ -14,7 +14,7 @@ def representation_maker(smiles_dict, save_folder):
             representation_dict = pickle.load(f)
     except FileNotFoundError:
         representation_dict = {}
-        gmm, smiles, conformers = get_gmm(save_folder, smiles_dict, "test")
+        gmm, smiles, conformers = get_gmm(save_folder, smiles_dict, "representing")
         representations, bad = represent(smiles, conformers, gmm, save_folder)
         for smile, representation in zip(smiles, representations):
             representation_dict[smile] = representation

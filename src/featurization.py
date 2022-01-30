@@ -6,10 +6,17 @@ import pickle
 
 def get_gmm(save_folder, smiles_dict, t):
     try:
-        with open(str(save_folder + "/gmm_dictionary.pickle"), "rb") as f:
-            gmm_dictionary = pickle.load(f)
-        print("Loaded the GMM data!")
-        return gmm_dictionary
+        if t == "representing":
+            with open(str(save_folder + "/gmm_dictionary.pickle"), "rb") as f:
+                gmm_dictionary = pickle.load(f)
+            print("Loaded the GMM data!")
+            smiles, conformers = make_conformers(smiles_dict)
+            return gmm_dictionary, smiles, conformers
+        else:
+            with open(str(save_folder + "/gmm_dictionary.pickle"), "rb") as f:
+                gmm_dictionary = pickle.load(f)
+            print("Loaded the GMM data!")
+            return gmm_dictionary
     except FileNotFoundError:
         if t == "training":
             print("There is no file named gmm_dictionary.pickle included in {}.\nNew gaussian mixture models "
