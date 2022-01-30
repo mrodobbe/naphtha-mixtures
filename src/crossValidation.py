@@ -1,5 +1,9 @@
 from sklearn.model_selection import KFold
+from joblib import wrap_non_picklable_objects, Parallel, delayed, cpu_count
 from tensorflow.keras.callbacks import EarlyStopping, Callback
+from tensorflow.python.client import device_lib
+import os
+import tensorflow as tf
 from src.model import *
 import numpy as np
 
@@ -218,6 +222,66 @@ def cv_configurations():
     seed = 120897
     n_folds = 10
     kf = KFold(n_folds, shuffle=True, random_state=seed)
-    n_jobs = n_folds
+    return kf, n_folds
 
-    return kf, n_jobs, n_folds
+
+def num_available_gpus():
+    local_device_protos = device_lib.list_local_devices()
+    return len([x.name for x in local_device_protos if x.device_type == 'GPU'])
+
+
+def training(condensed_representations, mixture_features, outputs, save_folder, bp=None):
+    kf, n_folds = cv_configurations()
+    cpu = cpu_count()
+    gpu = num_available_gpus()
+    # cpu = 4
+    if gpu > 0:
+        if cpu > 10:
+            n_jobs = 10
+        else:
+            n_jobs = 1
+    else:
+        if n_folds > cpu:
+            if cpu < 3:
+                n_jobs = 1
+            else:
+                n_jobs = cpu - 2
+        else:
+            n_jobs = n_folds
+
+    print("Your system has {} GPUs, {} CPUs and {} fold(s) will be trained in parallel".format(gpu, cpu, n_jobs))
+    if n_jobs > 1:
+        if gpu > 0:
+            os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+            cv_info = Parallel(n_jobs=n_jobs)(delayed(cv)(condensed_representations,
+                                                          mixture_features,
+                                                          outputs,
+                                                          loop_kf,
+                                                          i,
+                                                          save_folder,
+                                                          np.arange(len(condensed_representations)), bp=bp)
+                                              for loop_kf, i in zip(kf.split(condensed_representations),
+                                                                    range(1, n_folds + 1)))
+        else:
+            cv_info = Parallel(n_jobs=n_jobs)(delayed(cv)(condensed_representations,
+                                                          mixture_features,
+                                                          outputs,
+                                                          loop_kf,
+                                                          i,
+                                                          save_folder,
+                                                          np.arange(len(condensed_representations)), bp=bp)
+                                              for loop_kf, i in zip(kf.split(condensed_representations),
+                                                                    range(1, n_folds + 1)))
+    else:
+        if gpu == 1:
+            gpus = tf.config.list_physical_devices('GPU')
+            tf.config.set_visible_devices(gpus[0], 'GPU')
+            cv_info = [cv(condensed_representations, mixture_features, outputs, loop_kf, i, save_folder,
+                       np.arange(len(condensed_representations)), bp=bp)
+                       for loop_kf, i in zip(kf.split(condensed_representations), range(1, n_folds + 1))]
+        else:
+            cv_info = [cv(condensed_representations, mixture_features, outputs, loop_kf, i, save_folder,
+                       np.arange(len(condensed_representations)), bp=bp)
+                       for loop_kf, i in zip(kf.split(condensed_representations), range(1, n_folds + 1))]
+
+    return cv_info

@@ -1,6 +1,6 @@
 from src.makeMolecule import input_checker
 from src.featurization import representation_checker, make_mixture_features, get_gmm, clean_dicts
-from src.crossValidation import cv, cv_configurations
+from src.crossValidation import cv, cv_configurations, training
 from src.property_prediction import predict_properties
 from src.postprocessing import process_results
 import numpy as np
@@ -32,28 +32,12 @@ condensed_representations = representation_checker(all_molecules, all_fractions,
 
 save_folder_bp = save_folder + "/bp"
 save_folder_sg = save_folder + "/" + str(property_to_train)
-kf, n_jobs, n_folds = cv_configurations()
-all_results_bp = Parallel(n_jobs=n_jobs)(delayed(cv)(condensed_representations,
-                                                     mixture_features,
-                                                     boiling_points,
-                                                     loop_kf,
-                                                     i,
-                                                     save_folder_bp,
-                                                     np.arange(len(condensed_representations)))
-                                         for loop_kf, i in zip(kf.split(condensed_representations),
-                                                               range(1, n_folds+1)))
+
+kf, n_folds = cv_configurations()
+all_results_bp = training(condensed_representations, mixture_features, boiling_points, save_folder_bp)
 
 predicted_bp = process_results(all_results_bp, "bp", n_folds, save_folder_bp)
 
-all_results_sg = Parallel(n_jobs=n_jobs)(delayed(cv)(condensed_representations,
-                                                     mixture_features,
-                                                     output_sg,
-                                                     loop_kf,
-                                                     i,
-                                                     save_folder_sg,
-                                                     np.arange(len(condensed_representations)),
-                                                     bp=predicted_bp)
-                                         for loop_kf, i in zip(kf.split(condensed_representations),
-                                                               range(1, n_folds+1)))
+all_results_sg = training(condensed_representations, mixture_features, output_sg, save_folder_sg, bp=predicted_bp)
 
 process_results(all_results_sg, property_to_train, n_folds, save_folder_sg)
