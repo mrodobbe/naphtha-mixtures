@@ -1,6 +1,7 @@
 import numpy as np
 from rdkit import Chem
 import pandas as pd
+
 #
 # lumps = ["A6", "A7", "A8", "A8-1", "A8-2", "A9", "A10", "A11",
 #          "N5", "N6", "N6-1", "N6-2", "N7", "N8", "N9", "N10", "N11",
