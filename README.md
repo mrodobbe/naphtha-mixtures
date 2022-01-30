@@ -35,19 +35,19 @@ Replace <property> with the mixture property that you want to predict.
 
 Currently available properties:
 * _Using data from Pyl et al._:
-    Specific Gravity: sg   >>> `python train.py pretrained sg`
+    <br> Specific Gravity: sg   >>> `python train.py pretrained sg`
 * _Using data from Mei et al._:
-    Liquid Density: d20 or density   >>> `python train.py pretrained d20` or `python train.py pretrained density`
-    Dynamic Viscosity: mu or viscosity   >>> `python train.py pretrained mu` or `python train.py pretrained viscosity`
-    Surface Tension: st or surface tension   >>> `python train.py pretrained st` or `python train.py pretrained "surface tension"`
+    <br> Liquid Density: d20 or density   >>> `python train.py pretrained d20` or `python train.py pretrained density`
+    <br> Dynamic Viscosity: mu or viscosity   >>> `python train.py pretrained mu` or `python train.py pretrained viscosity`
+    <br> Surface Tension: st or surface tension   >>> `python train.py pretrained st` or `python train.py pretrained "surface tension"`
 
 All results will be found in the `pretrained` folder.
 
 ### New Model
 It is also possible to train all models yourself. Due to the large number of hydrocarbons, the creation of Gaussian mixture models will take several hours. 
-You can train the models simply using `python train.py <folder> <property>`
-Replace <folder> with the name of the folder where you want to store your results. 
-Replace <property> with the desired property, as statedabove.
+<br> You can train the models simply using `python train.py <folder> <property>`
+<br> Replace <folder> with the name of the folder where you want to store your results. 
+<br> Replace <property> with the desired property, as stated above.
 
 ## How to cite?
 When using this prediction model for your own publication, please cite the original papers:
