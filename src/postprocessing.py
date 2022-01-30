@@ -22,7 +22,7 @@ def boiling_point_plot(results_list_bp, n_folds, save_folder):
 
     font = {'family': 'UGent Panno Text',
             'weight': 'normal',
-            'size': 36}  ## Wijzig dit om de letters groter te maken
+            'size': 36}
     plt.rc('font', **font)
     fig, ax = plt.subplots()
     fig.set_size_inches(15, 10)
@@ -97,4 +97,4 @@ def process_results(data, prop, n_folds, save_folder):
         np.savetxt(str(save_folder + "/predicted_bps.txt"), predicted_values)
         return predicted_values
     else:
-        mixture_property_plot(results, n_folds, save_folder)
+        mixture_property_plot(results, n_folds, prop, save_folder)
