@@ -314,6 +314,7 @@ def make_composition(dataframe, lumps):
     smiles_dict = generate_smiles_dictionary(lumps, dataframe)
     weight_dict = {}
     for lump in lumps:
+        print(lump)
         check_value = single_value_lump(lump, smiles_dict, weight_dict)
         if not check_value:
             if "O" in lump:
@@ -321,6 +322,7 @@ def make_composition(dataframe, lumps):
             elif "N" in lump:
                 naphthenics(lump, smiles_dict, weight_dict)
             elif "A" in lump:
+                print(lump)
                 aromatics(lump, smiles_dict, weight_dict)
             elif "I" in lump:
                 isoparaffins(lump, smiles_dict, weight_dict)
