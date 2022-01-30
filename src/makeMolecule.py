@@ -366,7 +366,7 @@ def license_disclaimer():
           "Learning Molecular Representations for Thermochemistry Prediction of Cyclic Hydrocarbons and Oxygenates\n"
           "Dobbelaere, M.R.; Plehiers, P.P.; Van de Vijver, R.; Stevens, C.V.; Van Geem, K.M.\n"
           "Journal of Physical Chemistry A, 2021, 125, 23, pp. 5166-5179\n"
-          "Machine Learning for Physicochemical Property Prediction of Hydrocarbon Mixtures\n"
+          "Machine Learning for Physicochemical Property Prediction of Complex Hydrocarbon Mixtures\n"
           "Dobbelaere, M.R.; Ureel, Y.; Vermeire, F.H.; Stevens, C.V.; Van Geem, K.M.\n"
           "Submitted to Industrial and Engineering Chemistry Research, 2022\n"
           "------------------------------------------------------------------------------------------------------\n\n")
