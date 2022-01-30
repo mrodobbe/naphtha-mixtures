@@ -302,7 +302,7 @@ def add_n(molecules, representations):
     return new_representations
 
 
-def input_checker(args, filename):
+def input_checker(args, property_name, filename):
     if len(args) < 2:
         print("Not enough input files.\nPlease use the following command structure:\n"
               "python {}.py <save_folder> <mixture property>".format(filename))
@@ -331,9 +331,9 @@ def input_checker(args, filename):
             except FileExistsError:
                 print("Folder hist already exists.")
             try:
-                os.mkdir(str(folder + "/sg"))
+                os.mkdir(str(folder + "/" + property_name))
             except FileExistsError:
-                print("Folder sg already exists.")
+                print("Folder {} already exists.".format(property_name))
             try:
                 os.mkdir(str(folder + "/bp"))
             except FileExistsError:

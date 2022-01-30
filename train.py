@@ -6,10 +6,10 @@ from src.postprocessing import process_results
 import sys
 from input import load_data
 
-input_checker(sys.argv, "naphtha_mixtures")
-print("All folders are present!")
 save_folder = sys.argv[1]
 property_to_train = sys.argv[2]
+input_checker(sys.argv, property_to_train, "naphtha_mixtures")
+print("All folders are present!")
 
 compositions, boiling_points, output_sg, smiles_dict, weight_dict, df, lumps = load_data(property_to_train)
 gmm_dictionary = get_gmm(save_folder, smiles_dict, "training")  # TODO: Make output nicer
