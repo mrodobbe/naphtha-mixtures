@@ -1,5 +1,6 @@
 from src.stochastic_compositions import make_composition
 import pickle
+import numpy as np
 
 
 def load_data(property_to_train):
@@ -9,7 +10,7 @@ def load_data(property_to_train):
     with open("Data/pyl_input.pickle", "rb") as inp_f:
         df_input = pickle.load(inp_f)
 
-    with open("Data/pyl_input.pickle", "rb") as oup_f:
+    with open("Data/pyl_output.pickle", "rb") as oup_f:
         df_output = pickle.load(oup_f)
 
     lumps = df_input.keys().tolist()
@@ -40,6 +41,7 @@ def load_data(property_to_train):
               "input.py or another property name can be used.\n\n".format(property_to_train))
         raise ValueError
     boiling_points = df_output[bp_columns].to_numpy()
+    np.savetxt("bp_to_predict.txt", boiling_points, fmt="%.4f")
     output_sg = df_output[sg_columns].to_numpy().reshape(-1) * 1000
 
     print("All data is loaded!")
