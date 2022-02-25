@@ -1,23 +1,34 @@
 import numpy as np
 from rdkit import Chem
 import pandas as pd
+from src.featurization import clean_dicts, absolute_fractions
 
-#
+
 # lumps = ["A6", "A7", "A8", "A8-1", "A8-2", "A9", "A10", "A11",
 #          "N5", "N6", "N6-1", "N6-2", "N7", "N8", "N9", "N10", "N11",
 #          "O5", "O6",
 #          "P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12",
 #          "I4", "I5", "I6", "I7", "I8", "I9", "I10", "I11", "I12"]
+# lumps = ["P4", "P5", "P6", "P7", "P8", "P9",
+#          "I4", "I5", "I6", "I7", "I8", "I9",
+#          "N5", "N6", "N7", "N8",
+#          "A6", "A7", "A8", "A9"]
 #
 # df = pd.read_excel("C:/Users/mrodobbe/Documents/Research/GauL-mixture/libraries.xlsx",
 #                    sheet_name="Labeled Library",
 #                    index_col=0)
+# df_inp = pd.read_excel("../piona_rossini.xlsx",
+#                        sheet_name="input",
+#                        index_col=None)
+# comp = df_inp.to_numpy()
 
 
 def generate_smiles_dictionary(lumps, dataframe):
     smiles_dict = {}
 
     for lump in lumps:
+        if "O" in lump:
+            continue
         # smiles_dict[lump] = dataframe["SMILES"][dataframe.index[dataframe['Lump'] == lump].to_numpy()].tolist()
         smiles_dict[lump] = dataframe.index[dataframe['Lump'] == lump].tolist()
 
@@ -25,7 +36,53 @@ def generate_smiles_dictionary(lumps, dataframe):
     smiles_dict["N6-2"] = ["C1CCCCC1"]
     smiles_dict["A8-1"] = ["Cc1cccc(C)c1", "Cc1ccc(C)cc1", "Cc1ccccc1C"]
     smiles_dict["A8-2"] = ["CCc1ccccc1"]
-    # smiles_dict["NA10"] = ["c1ccc2cccc-2cc1"]
+
+    # smiles_dict["I5"] = ["CCC(C)C"]
+    # smiles_dict["I6"] = ["CCCC(C)C"]
+    # smiles_dict["I7"] = ["CCCCC(C)C"]
+    # smiles_dict["I8"] = ["CCCCCC(C)C"]
+    # smiles_dict["I9"] = ["CCCCCCC(C)C"]
+    # smiles_dict["I10"] = ["CCCCCCCC(C)C"]
+    # smiles_dict["I11"] = ["CCCCCCCCC(C)C"]
+    # smiles_dict["I12"] = ["CCCCCCCCCC(C)C"]
+    # smiles_dict["N5"] = ["C1CCCC1"]
+    # smiles_dict["N7"] = ["CC1CCCCC1"]
+    # smiles_dict["N8"] = ["CCC1CCCCC1"]
+    # smiles_dict["N9"] = ["CCCC1CCCCC1"]
+    # smiles_dict["N10"] = ["CCCCC1CCCCC1"]
+    # smiles_dict["N11"] = ["CCCCCC1CCCCC1"]
+    # smiles_dict["N12"] = ["CCCCCCC1CCCCC1"]
+    # smiles_dict["A9"] = ["CCCc1ccccc1"]
+    # smiles_dict["A10"] = ["CCCCc1ccccc1"]
+    # smiles_dict["A11"] = ["CCCCCc1ccccc1"]
+    # smiles_dict["A12"] = ["CCCCCCc1ccccc1"]
+    smiles_dict["O4"] = ["C=CCC"]
+    smiles_dict["O5"] = ["C=CCCC"]
+    smiles_dict["O6"] = ["C=CCCCC"]
+    smiles_dict["O7"] = ["C=CCCCCC"]
+    smiles_dict["O8"] = ["C=CCCCCCC"]
+    smiles_dict["O9"] = ["C=CCCCCCCC"]
+    smiles_dict["O10"] = ["C=CCCCCCCCC"]
+    smiles_dict["O11"] = ["C=CCCCCCCCCC"]
+    smiles_dict["O12"] = ["C=CCCCCCCCCCC"]
+    smiles_dict["DO4"] = ["C=CC=C"]
+    smiles_dict["DO5"] = ["C=CCC=C"]
+    smiles_dict["DO6"] = ["C=CCCC=C"]
+    smiles_dict["DO7"] = ["C=CCCCC=C"]
+    smiles_dict["DO8"] = ["C=CCCCCC=C"]
+    smiles_dict["DO9"] = ["C=CCCCCCC=C"]
+    smiles_dict["DO10"] = ["C=CCCCCCCC=C"]
+    smiles_dict["DO11"] = ["C=CCCCCCCCC=C"]
+    smiles_dict["DO12"] = ["C=CCCCCCCCCC=C"]
+    smiles_dict["IO4"] = ["C=C(C)C"]
+    smiles_dict["IO5"] = ["C=CC(C)C"]
+    smiles_dict["IO6"] = ["C=CCC(C)C"]
+    smiles_dict["IO7"] = ["C=CCCC(C)C"]
+    smiles_dict["IO8"] = ["C=CCCCC(C)C"]
+    smiles_dict["IO9"] = ["C=CCCCCC(C)C"]
+    smiles_dict["IO10"] = ["C=CCCCCCC(C)C"]
+    smiles_dict["IO11"] = ["C=CCCCCCCC(C)C"]
+    smiles_dict["IO12"] = ["C=CCCCCCCCC(C)C"]
 
     return smiles_dict
 
@@ -40,89 +97,43 @@ def single_value_lump(lump_name, dictionary, weight_dict):
 
 def isoparaffins(lump_name, dictionary, weight_dict):
     weights = []
+
     len_molecule = dictionary[lump_name][0].count("C")
-    two_methyl_pattern = Chem.MolFromSmarts("[CH3][CH]([CH3])[CX4]")
-    two_two_dimethyl_pattern = Chem.MolFromSmarts("[CH3][C]([CH3])([CH3])[CX4]")
-    x_x_dimethyl_pattern = Chem.MolFromSmarts("[CX4][CH2][C]([CH3])([CH3])[CH2][CX4]")
-    other_methyl_pattern = Chem.MolFromSmarts("[CX4][CH2][CH]([CH3])[CH2][CX4]")
-    ethyl_pattern = Chem.MolFromSmarts("[CX4][CX4][C]([CH2][CH3])[CX4][CX4]")
-    same_ethyl_methyl_pattern = Chem.MolFromSmarts("[CX4][CX4][C]([CH2][CH3])([CX4])[CX4][CX4]")
-    methyl_pattern = Chem.MolFromSmarts("[CX4][CH]([CH3])[CX4]")
-    central_methyl_pattern = Chem.MolFromSmarts("[CH2][CH2][CH]([CH3])[CH2][CH2]")
-    central_dimethyl_pattern = Chem.MolFromSmarts("[CX4][CH2][CH]([CH3])[CH]([CH3])[CH2][CX4]")
+    alpha_sec = 0.3
+    alpha_tert = 0.05
+    alpha_eth = 0.05
 
-    if len_molecule > 6:
-        if len_molecule == 7 or len_molecule == 8:
-            num_ethyls = 1
-        elif len_molecule == 9 or len_molecule == 10:
-            num_ethyls = 2
-        elif len_molecule == 11 or len_molecule == 12:
-            num_ethyls = 3
-
-        num_dimethyls = (num_ethyls + 1) * (num_ethyls + 2 - len_molecule % 2)
-
-    elif len_molecule == 5:
-        num_dimethyls = 1
-    elif len_molecule == 6:
-        num_dimethyls = 2
-
-    num_other_methyls = 0.5*((len_molecule - 1) - ((len_molecule - 1) % 2)) - 1
-
-    if len_molecule == 7:
-        num_trimethyls = 1
-    elif len_molecule == 8:
-        num_trimethyls = 4
-    elif len_molecule == 9:
-        num_trimethyls = 8
-    elif len_molecule == 10:
-        num_trimethyls = 16
-    elif len_molecule == 11:
-        num_trimethyls = 25
-    elif len_molecule == 12:
-        num_trimethyls = 40
+    def symmetry(mol):
+        l = mol.GetNumHeavyAtoms()
+        diff = l - len(set(list(Chem.rdmolfiles.CanonicalRankAtoms(Chem.RemoveAllHs(mol), breakTies=False))))
+        return diff
 
     for comp in dictionary[lump_name]:
-        num_side_chains = comp.count("(")
         m = Chem.MolFromSmiles(comp)
-        if num_side_chains == 1:
-            if len(m.GetSubstructMatches(two_methyl_pattern)) > 0:
-                weights.append(25)
-            elif len(m.GetSubstructMatches(ethyl_pattern)) > 0:
-                weights.append(1.8/num_ethyls)
-            elif len(m.GetSubstructMatches(central_methyl_pattern)) > 0:
-                weights.append(12/num_other_methyls)
-            elif len(m.GetSubstructMatches(other_methyl_pattern)) > 0:
-                weights.append(24/num_other_methyls)
-            else:
-                weights.append(0.1/num_other_methyls)
-        elif num_side_chains == 2:
-            if len(m.GetSubstructMatches(two_two_dimethyl_pattern)) > 0:
-                weights.append(1/num_dimethyls)
-            elif len(m.GetSubstructMatches(x_x_dimethyl_pattern)) > 0:
-                weights.append(2/num_dimethyls)
-            elif len(m.GetSubstructMatches(central_dimethyl_pattern)) > 0:
-                weights.append(14/num_dimethyls)
-            elif len(m.GetSubstructMatches(methyl_pattern)) == 2:
-                weights.append(12/num_dimethyls)
-            elif len(m.GetSubstructMatches(same_ethyl_methyl_pattern)) > 0:
-                weights.append(1/num_dimethyls)
-            elif len(m.GetSubstructMatches(ethyl_pattern)) > 0:
-                weights.append(4/num_dimethyls)
-            else:
-                weights.append(0.1/num_dimethyls)
-        elif num_side_chains == 3:
-            if len(m.GetSubstructMatches(two_two_dimethyl_pattern)) > 0:
-                weights.append(0.75/num_trimethyls)
-            elif len(m.GetSubstructMatches(x_x_dimethyl_pattern)) > 0:
-                weights.append(1/num_trimethyls)
-            elif len(m.GetSubstructMatches(methyl_pattern)) == 3:
-                weights.append(3/num_trimethyls)
-            else:
-                weights.append(0.5 / num_trimethyls)
-        elif num_side_chains == 4:
-            weights.append(0.2/num_trimethyls)
+        num_side_chains = comp.count("(")
+        num_methyl = comp.count("(C)")
+        num_ethyl = comp.count("(CC)")
+        larger_alkyl = num_side_chains - (num_methyl + num_ethyl)
+        quat = Chem.MolFromSmarts("[#6]([#6])([#6])([#6])[#6]")
+        num_quat = len(m.GetSubstructMatches(quat))
+        if larger_alkyl > 0:
+            prefactor = 0
+            # weights.append(0)
+        elif comp == "CCCC(C)CC":
+            prefactor = 2 + alpha_sec
+            # weights.append(alpha_sec * (2 + alpha_sec))
+        elif comp == "CCCCCC(C)C":
+            prefactor = 3.9
+            # weights.append(3.9 * alpha_sec)
+        elif (len_molecule - (num_methyl + (2 * num_ethyl))) % 2 == 1 and symmetry(m) >= 2:
+            prefactor = 1
+        elif num_side_chains > 1 and symmetry(m) >= 2:
+            prefactor = 1
         else:
-            weights.append(0.1/num_trimethyls)
+            prefactor = 2
+        weights.append(prefactor * (alpha_sec ** (num_methyl - num_quat)) *
+                       (alpha_eth ** num_ethyl) * (alpha_tert ** num_quat))
+
     weights = np.asarray(weights).astype(np.float)
     weights = weights / np.sum(weights)
     weight_dict[lump_name] = weights
@@ -172,6 +183,14 @@ def olefins(lump_name, dictionary, weight_dict):
 
 def naphthenics(lump_name, dictionary, weight_dict):
     len_molecule = dictionary[lump_name][0].count("C")
+
+    alpha_c5 = 0.9
+    alpha_c6 = 0.75
+    alpha_methyl = 0.8
+    alpha_prim = 0.1
+
+    alpha_quat = 0.1
+
     c5 = Chem.MolFromSmarts("C1CCCC1")
     c6 = Chem.MolFromSmarts("C1CCCCC1")
     monoalkylc5 = Chem.MolFromSmarts("[CH2]1[CH2][CH2][CH2][CH]1[CX4]")
@@ -186,57 +205,75 @@ def naphthenics(lump_name, dictionary, weight_dict):
     bialkylc6_13 = Chem.MolFromSmarts("[CH2]1[CH]([CX4])[CH2][CH2][CH2][CH]1[CX4]")
     bialkylc6_14 = Chem.MolFromSmarts("[CH2]1[CH2][CH]([CX4])[CH2][CH2][CH]1[CX4]")
 
-    trialkyl = Chem.MolFromSmarts("[#6]@[#6]([#6])@[#6]")
+    trialkyl = Chem.MolFromSmarts("[#6]@[#6](!@[#6])([#1])@[#6]")
     dialkyl = Chem.MolFromSmarts("[#6]@[#6]([#6])([#6])@[#6]")
 
     nalkyl = Chem.MolFromSmarts("[#6]-!@[#6]-!@[#6]")
+    alkyl_tert = Chem.MolFromSmarts("[#6]!@[#6](!@[#6])!@[#6]")
+    alkyl_quat = Chem.MolFromSmarts("[#6]!@[#6](!@[#6])(!@[#6])!@[#6]")
+    quat = Chem.MolFromSmarts("[#6]([#6])([#6])([#6])[#6]")
+    next_neighbor = Chem.MolFromSmarts("[#6](!@[#6])@[#6](!@[#6])@[#6]")
 
     weights = []
     for comp in dictionary[lump_name]:
         m = Chem.MolFromSmiles(comp)
         num_side_chains = comp.count("(")
-        if len(m.GetSubstructMatches(c5)) > 0:
-            if comp == "CC1CCCC1":
-                weights.append(0.8)
-            elif comp.count("=") > 0:
-                weights.append(0)
-            elif comp == "C1CCCC1":
-                weights.append(0.8)
-            elif len(m.GetSubstructMatches(monoalkylc5)) > 0:
-                weights.append(2 / (((num_side_chains + 1) ** 3) * ((m.GetNumHeavyAtoms() - num_side_chains - 5) ** 3)))
-            elif len(m.GetSubstructMatches(bialkylc5_same)) > 0:
-                weights.append(0.1 / (len(m.GetSubstructMatches(nalkyl)) + 1))
-            elif len(m.GetSubstructMatches(bialkylc5_12)) > 0:
-                weights.append(0.4 / (len(m.GetSubstructMatches(nalkyl)) + 1))
-            elif len(m.GetSubstructMatches(bialkylc5_13)) > 0:
-                weights.append(0.2 / (len(m.GetSubstructMatches(nalkyl)) + 1))
-            elif len(m.GetSubstructMatches(trialkyl)) == 3 and len(m.GetSubstructMatches(dialkyl)) == 0:
-                weights.append(0.25 / (len(m.GetSubstructMatches(nalkyl)) + 1))
-            elif len(m.GetSubstructMatches(trialkyl)) == 3 and len(m.GetSubstructMatches(dialkyl)) > 0:
-                weights.append(0.25 / (len(m.GetSubstructMatches(nalkyl))))
+        n_alkyl_tert = len(m.GetSubstructMatches(alkyl_tert))
+        n_alkyl_quat = len(m.GetSubstructMatches(alkyl_quat))
+        if comp.count("=") > 0:
+            weights.append(0)
+        elif len(m.GetSubstructMatches(c5)) > 0:
+            if len(m.GetSubstructMatches(monoalkylc5)) > 0:
+                if len_molecule == 6:
+                    weights.append(alpha_c5)
+                else:
+                    weights.append(5 * alpha_c5 * (alpha_methyl ** (1 + n_alkyl_tert)) *
+                                   (alpha_prim ** (len_molecule - 6)) * (alpha_quat ** n_alkyl_quat))
             else:
-                weights.append(0)
+                if len(m.GetSubstructMatches(bialkylc5_same)) > 0:
+                    weights.append(5 * alpha_c5 * (alpha_methyl ** (1 + n_alkyl_tert)) *
+                                   (alpha_quat ** (1 + n_alkyl_quat)) * (alpha_prim ** (len_molecule - 7)))
+                elif len(m.GetSubstructMatches(bialkylc5_12)) > 0:
+                    weights.append(2 * alpha_c5 * (alpha_methyl ** (2 + n_alkyl_tert)) *
+                                   (alpha_prim ** (len_molecule - 7)) * (alpha_quat ** n_alkyl_quat))
+                elif len(m.GetSubstructMatches(bialkylc5_13)) > 0:
+                    weights.append(4 * alpha_c5 * (alpha_methyl ** (2 + n_alkyl_tert)) *
+                                   (alpha_prim ** (len_molecule - 7)) * (alpha_quat ** n_alkyl_quat))
+                else:
+                    n_quat = len(m.GetSubstructMatches(dialkyl))
+                    n_tri = len(Chem.AddHs(m).GetSubstructMatches(trialkyl))
+                    if len(m.GetSubstructMatches(next_neighbor)) > 0:
+                        prefactor = 2
+                    else:
+                        prefactor = 10
+                    weights.append(prefactor * alpha_c5 * (alpha_methyl ** (n_tri + n_quat + n_alkyl_tert)) *
+                                   (alpha_quat ** (n_quat + n_alkyl_quat)) *
+                                   (alpha_prim ** (len_molecule - (5 + n_tri + (2 * n_quat)))))
         elif len(m.GetSubstructMatches(c6)) > 0:
-            if comp == "C1CCCC1":
-                weights.append(1)
-            elif comp.count("=") > 0:
-                weights.append(0)
-            elif len(m.GetSubstructMatches(monoalkylc6)) > 0:
-                weights.append(3 / (((num_side_chains + 1) ** 3) * ((m.GetNumHeavyAtoms() - num_side_chains - 6) ** 3)))
-            elif len(m.GetSubstructMatches(bialkylc6_same)) > 0:
-                weights.append(0.1 / (len(m.GetSubstructMatches(nalkyl))))
-            elif len(m.GetSubstructMatches(bialkylc6_12)) > 0:
-                weights.append(0.4 / (len(m.GetSubstructMatches(nalkyl)) + 1))
-            elif len(m.GetSubstructMatches(bialkylc6_13)) > 0:
-                weights.append(0.8 / (len(m.GetSubstructMatches(nalkyl)) + 1))
-            elif len(m.GetSubstructMatches(bialkylc6_14)) > 0:
-                weights.append(0.3 / (len(m.GetSubstructMatches(nalkyl)) + 1))
-            elif len(m.GetSubstructMatches(trialkyl)) == 3 and len(m.GetSubstructMatches(dialkyl)) == 0:
-                weights.append(0.25 / (len(m.GetSubstructMatches(nalkyl)) + 1))
-            elif len(m.GetSubstructMatches(trialkyl)) == 3 and len(m.GetSubstructMatches(dialkyl)) > 0:
-                weights.append(0.25 / (len(m.GetSubstructMatches(nalkyl))))
+            if len(m.GetSubstructMatches(monoalkylc6)) > 0:
+                weights.append(6 * alpha_c6 * (alpha_methyl ** (1 + n_alkyl_tert)) *
+                               (alpha_prim ** (len_molecule - 7)) * (alpha_quat ** n_alkyl_quat))
             else:
-                weights.append(0)
+                if len(m.GetSubstructMatches(bialkylc6_same)) > 0:
+                    weights.append(6 * alpha_c6 * (alpha_methyl ** (1 + n_alkyl_tert)) *
+                                   (alpha_quat ** (1 + n_alkyl_quat)) * (alpha_prim ** (len_molecule - 7)))
+                elif len(m.GetSubstructMatches(bialkylc6_12)) > 0:
+                    weights.append(2 * alpha_c6 * (alpha_methyl ** (2 + n_alkyl_tert)) *
+                                   (alpha_prim ** (len_molecule - 8)) * (alpha_quat ** n_alkyl_quat))
+                elif len(m.GetSubstructMatches(bialkylc6_13)) > 0:
+                    weights.append(4 * alpha_c6 * (alpha_methyl ** (2 + n_alkyl_tert)) *
+                                   (alpha_prim ** (len_molecule - 8)) * (alpha_quat ** n_alkyl_quat))
+                elif len(m.GetSubstructMatches(bialkylc6_14)) > 0:
+                    weights.append(2 * alpha_c6 * (alpha_methyl ** (2 + n_alkyl_tert)) *
+                                   (alpha_prim ** (len_molecule - 8)) * (alpha_quat ** n_alkyl_quat))
+                elif len_molecule == 6:
+                    weights.append(alpha_c6)
+                else:
+                    n_quat = len(m.GetSubstructMatches(dialkyl))
+                    n_tri = len(Chem.AddHs(m).GetSubstructMatches(trialkyl))
+                    weights.append(alpha_c6 * (alpha_methyl ** (n_tri + n_quat + n_alkyl_tert)) *
+                                   (alpha_quat ** (n_quat + n_alkyl_quat)) *
+                                   (alpha_prim ** (len_molecule - (6 + n_tri + (2 * n_quat)))))
         else:
             weights.append(0)
 
@@ -247,62 +284,44 @@ def naphthenics(lump_name, dictionary, weight_dict):
 
 
 def aromatics(lump_name, dictionary, weight_dict):
-    len_molecule = dictionary[lump_name][0].count("C")
+    len_molecule = dictionary[lump_name][0].lower().count("c")
     weights = []
     meta = Chem.MolFromSmarts("*-!:aaa-!:*")
     ortho = Chem.MolFromSmarts("*-!:aa-!:*")
     para = Chem.MolFromSmarts("*-!:aaaa-!:*")
     mono = Chem.MolFromSmarts("[cH]1[cH][cH][cH][cH][c]1[CX4]")
+    alpha_mono = np.sqrt(0.4)
+    alpha_ortho = np.sqrt(0.5)
+    alpha_para = np.sqrt(0.3)
+    alpha_meta = np.sqrt(0.8)
+    len_alkyl = len_molecule - 6
     for comp in dictionary[lump_name]:
-        num_side_chains = comp.count("(")
         m = Chem.MolFromSmiles(comp)
-        if len(m.GetSubstructMatches(meta)) > 2:
-            if len_molecule > 9:
-                weights.append(1 / ((num_side_chains + 1) ** 3))
-            else:
-                weights.append(1)
-        elif len(m.GetSubstructMatches(ortho)) > 2:
-            if len_molecule > 9:
-                weights.append(0.1 / ((num_side_chains + 1) ** 3))
-            else:
-                weights.append(0.1)
+        if len(m.GetSubstructMatches(meta)) > 1 and len(m.GetSubstructMatches(ortho)) == 0:
+            weights.append((1/np.math.factorial(len_alkyl)) * alpha_meta ** len_alkyl)
+        elif len(m.GetSubstructMatches(ortho)) > 1:
+            weights.append((1/np.math.factorial(len_alkyl)) * alpha_ortho ** len_alkyl)
         elif len(m.GetSubstructMatches(meta)) > 0 and len(m.GetSubstructMatches(ortho)) > 0:
-            if len_molecule > 9:
-                weights.append(0.3 / ((num_side_chains + 1) ** 3))
-            else:
-                weights.append(0.3)
-        elif len(m.GetSubstructMatches(meta)) > 0 and len(m.GetSubstructMatches(para)) > 0:
-            if len_molecule > 9:
-                weights.append(0.3 / ((num_side_chains + 1) ** 3))
-            else:
-                weights.append(0.3)
-        elif len(m.GetSubstructMatches(ortho)) > 0 and len(m.GetSubstructMatches(para)) > 0:
-            if len_molecule > 9:
-                weights.append(0.15 / ((num_side_chains + 1) ** 3))
-            else:
-                weights.append(0.15)
+            weights.append((len_alkyl/np.math.factorial(len_alkyl)) * (alpha_meta ** 2) * alpha_ortho)
         elif len(m.GetSubstructMatches(meta)) > 0:
             if len_molecule > 8:
-                weights.append(11 / ((num_side_chains + 1) ** 3))
+                weights.append((1/len_alkyl) * alpha_meta * alpha_mono)
             else:
-                weights.append(11)
+                weights.append((1 / np.math.factorial(len_alkyl)) * alpha_meta ** len_alkyl)
         elif len(m.GetSubstructMatches(ortho)) > 0:
             if len_molecule > 8:
-                weights.append(6 / ((num_side_chains + 1) ** 3))
+                weights.append((1/len_alkyl) * alpha_ortho * alpha_mono)
             else:
-                weights.append(6)
+                weights.append((1/np.math.factorial(len_alkyl)) * alpha_ortho ** len_alkyl)
         elif len(m.GetSubstructMatches(para)) > 0:
             if len_molecule > 8:
-                weights.append(6.2 / (num_side_chains ** 3))
+                weights.append((1/len_alkyl) * alpha_para * alpha_mono)
             else:
-                weights.append(6.2)
+                weights.append((1/np.math.factorial(len_alkyl)) * alpha_para ** len_alkyl)
         elif len(m.GetSubstructMatches(mono)) > 0:
-            if len_molecule > 8:
-                weights.append(15 / (num_side_chains ** 3))
-            else:
-                weights.append(15)
+            weights.append((1/np.math.factorial(len_alkyl)) * alpha_mono ** len_alkyl)
         else:
-            weights.append(0.01 / ((num_side_chains + 1) ** 3))
+            weights.append(0)
 
     weights = np.asarray(weights).astype(np.float)
     weights = weights / np.sum(weights)
@@ -317,6 +336,7 @@ def make_composition(dataframe, lumps):
         check_value = single_value_lump(lump, smiles_dict, weight_dict)
         if not check_value:
             if "O" in lump:
+                continue
                 olefins(lump, smiles_dict, weight_dict)
             elif "N" in lump:
                 naphthenics(lump, smiles_dict, weight_dict)
@@ -328,5 +348,13 @@ def make_composition(dataframe, lumps):
 
 
 # smiles_dict, weight_dict = make_composition(df, lumps)
-# np.savetxt("smiles_n8.txt", smiles_dict["N8"], fmt="%s")
-# np.savetxt("weights_n8.txt", weight_dict["N8"], fmt="%.6f")
+# # np.savetxt("smiles_i8.txt", smiles_dict["I8"], fmt="%s")
+# # np.savetxt("weights_i8.txt", weight_dict["I8"], fmt="%.6f")
+# print(comp)
+# print(smiles_dict["A7"])
+# print(weight_dict["A7"])
+# smiles_dict, weight_dict = clean_dicts(smiles_dict, weight_dict)
+# all_fractions, all_molecules = absolute_fractions(comp, weight_dict, smiles_dict, lumps)
+# all_molecules = np.asarray(all_molecules)
+# np.savetxt("all_mols.txt", all_molecules, fmt="%s")
+# np.savetxt("all_fracs.txt", all_fractions, fmt="%.6f", delimiter="\n")
