@@ -90,6 +90,7 @@ def process_results(data, prop, n_folds, save_folder):
         prediction.append(np.asarray(result[1], dtype=object))
         results.append(result[0])
     prediction = np.concatenate(prediction, axis=0)
+    np.savetxt(str(save_folder + "/predictions.mrd"), prediction, fmt="%s")
     predicted_values = prediction[prediction[:, 0].argsort()][:, 1:]
     predicted_values = np.asarray(predicted_values).astype(np.float)
     if prop is "bp":

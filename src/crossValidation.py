@@ -83,7 +83,7 @@ def cv(compositions, piona, output, loop, i, save_folder, indices, bp=None):
         else:
             history = model.fit([compositions_train, piona_train], output_train, epochs=10000,
                                 validation_data=([compositions_v, piona_v], output_v),
-                                batch_size=8, callbacks=[es, lh], verbose=0)
+                                batch_size=48, callbacks=[es, lh], verbose=0)
 
         if bp is not None:
             if len(output_test.shape) > 1:
